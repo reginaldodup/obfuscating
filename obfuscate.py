@@ -5,8 +5,10 @@ import json
 
 def get_all_comments(code):  # /!\ ongoing /!\
     """Finds all single line comments and return it as a list"""
-    pattern = r'\s*#.*'
+    pattern = r'\.*(#.*)'
     matches = re.findall(pattern, code)
+    # Deal with shebang line
+    matches = [ item for item in matches if item[:2] not in ['#!']]
     return matches
 
 def get_all_strings(code):
@@ -160,6 +162,20 @@ if __name__ == '__main__':
     with open('library.py', 'r') as f:
         code = f.read()
 
+    # Comments
+    # -------------------
+    all_comments = get_all_comments(code)
+    all_comments = {i:all_comments[i] for i in range(len(all_comments))}
+    print(json.dumps(all_comments, indent=2))
+    # Use replace instead of regex sub because of special chars (-.\) etc...
+    for key in all_comments:
+        print(f'{all_comments[key]:40}', '-->', '# CMT' + get_bin_representation(int(key)))
+        code = code.replace(
+            all_comments[key],
+            '# CMT' + get_bin_representation(int(key))
+        )
+
+    
     # Strings
     # -------------------
     string_list = get_all_strings(code)
@@ -170,10 +186,6 @@ if __name__ == '__main__':
     for key in string_dic:
         code = re.sub(key, string_dic[key], code)
 
-    # print(tstring_to_concat("f'Hello {name}, how are you?'"))
-    # print(tstring_to_concat("'Hello world!'"))
-
-    
     # Doc Strings
     # -------------------
     all_doc_strings = get_all_doc_strings(code)
@@ -182,17 +194,11 @@ if __name__ == '__main__':
 
     for key in all_doc_strings:
         code = re.sub(
-                all_doc_strings[key], 
-                'DOCS' + get_bin_representation(int(key)),
-                code
-                )
-    # print(code)
+            all_doc_strings[key], 
+            'DOCS' + get_bin_representation(int(key)),
+            code
+        )
 
-    # print(re.sub(
-    #         '.*(#.*)',
-    #         '# comment',
-    #         code
-    #     ))
     # print('CASSES:\n', get_class_names(code))
     # print('\nFUNCTIONS:\n', get_function_names(code))
     # print('\nFUNCTION ARGS:\n', get_func_argument_names(code))
