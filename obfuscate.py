@@ -3,7 +3,7 @@ import re
 import json
 
 
-def get_all_comments(code):  # /!\ ongoing /!\
+def get_all_comments(code):  
     """Finds all single line comments and return it as a list"""
     pattern = r'\.*(#.*)'
     matches = re.findall(pattern, code)
@@ -77,7 +77,7 @@ def get_a_map(a=""):
     a += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     a += "1234567890"
     a += "\"'"
-    a += r"[({<>})]-=*\|!@#$%^&/?.,_ "
+    a += r"[({<>})]-=*\|!@#$%^&/?+.,_ "
     return {a[i]:i for i in range(len(a))}
 
 def get_unique_values(l):
@@ -154,7 +154,7 @@ def write_code_to_file(code):
         f.write('a+= "1234567890"\n')
         f.write('a+= "\\\""\n')
         f.write("a+= '\\\''\n")
-        f.write('a+= r"[({<>})]-=*\\|!@#$%^&/?.,_ "\n')
+        f.write('a+= r"[({<>})]-=*\\|!@#$%^&/?+.,_ "\n')
         f.write(code)
         
 if __name__ == '__main__':
@@ -174,7 +174,6 @@ if __name__ == '__main__':
             all_comments[key],
             '# CMT' + get_bin_representation(int(key))
         )
-
     
     # Strings
     # -------------------
@@ -183,8 +182,10 @@ if __name__ == '__main__':
     string_dic = { text_str:tstring_to_concat(text_str) for text_str in string_list}
     # print(json.dumps(string_dic, indent=2))
 
+    # Use replace instead of regex sub because of special chars (-.\) etc...
     for key in string_dic:
-        code = re.sub(key, string_dic[key], code)
+        code = code.replace(key, string_dic[key])
+        # code = re.sub(key, string_dic[key], code)
 
     # Doc Strings
     # -------------------
@@ -198,14 +199,6 @@ if __name__ == '__main__':
             'DOCS' + get_bin_representation(int(key)),
             code
         )
-
-    # print('CASSES:\n', get_class_names(code))
-    # print('\nFUNCTIONS:\n', get_function_names(code))
-    # print('\nFUNCTION ARGS:\n', get_func_argument_names(code))
-    # print('\nVARIABLE NAMES:\n', get_variable_names(code))
-    # print('\nITERABLES:\n', get_iter_variable_names(code))
-    # for i in range(10):
-    #     print(f'{i:02}: {get_bin_representation(i)}')
 
     # Other names
     # -------------------
@@ -226,16 +219,15 @@ if __name__ == '__main__':
     dic_names = { 
         item:get_bin_representation(num) for item, num in zip(
             all_names, range(len(all_names))
-            )
+        )
     }
     # Replace from list
     for key in dic_names:
         # print(f'{key:20} -> {dic_names[key]}')
         code = re.sub(
-                    f'\\b{key}\\b',
-                    f'{dic_names[key]}',
-                    code
-                )
+            f'\\b{key}\\b',
+            f'{dic_names[key]}',
+            code
+        )
     write_code_to_file(code)
-    # print(code)
 
