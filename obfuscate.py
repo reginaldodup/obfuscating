@@ -8,7 +8,7 @@ def get_all_comments(code):
     pattern = r'\.*(#.*)'
     matches = re.findall(pattern, code)
     # Deal with shebang line
-    matches = [ item for item in matches if item[:2] not in ['#!']]
+    matches = [ item for item in matches if item[:2] not in ['#!'] ]
     return matches
 
 def get_all_strings(code):
@@ -19,7 +19,7 @@ def get_all_strings(code):
     matches+= re.findall(pattern, code)
     doc_strings = get_all_doc_strings(code)
     # Remove doc strings
-    matches = [item for item in matches if item[1:-1] not in doc_strings ]
+    matches = [ item for item in matches if item[1:-1] not in doc_strings ]
     # Deal with __main__ and with annotations
     matches = [ item for item in matches \
                 if item[1:-1] not in ['__main__', 'int', 'float', 'list', 'string'] ]
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     # -------------------
     string_list = get_all_strings(code)
     # print(string_list)
-    string_dic = { text_str:tstring_to_concat(text_str) for text_str in string_list}
+    string_dic = { text_str:tstring_to_concat(text_str) for text_str in string_list }
     # print(json.dumps(string_dic, indent=2))
 
     # Use replace instead of regex sub because of special chars (-.\) etc...
