@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import re
 import json
+import argparse
+import os
 
 
 def get_all_comments(code):  
@@ -157,29 +159,32 @@ def write_code_to_file(code):
         f.write('a+= r"[({<>})]-=*\\|!@#$%^&/?+.,_ "\n')
         f.write(code)
         
-if __name__ == '__main__':
-    # print('Starting obfuscate...')
-    with open('library.py', 'r') as f:
+def obfuscate_file(file_name):
+
+    with open(file_name, 'r') as f:
         code = f.read()
 
     # Comments
     # -------------------
     all_comments = get_all_comments(code)
-    all_comments = {i:all_comments[i] for i in range(len(all_comments))}
-    print(json.dumps(all_comments, indent=2))
+    # all_comments = { i:all_comments[i] for i in range(len(all_comments))}
+    all_comments_dic = { all_comments[i] : '# CMT' + get_bin_representation(i) for i in range(len(all_comments))}
+    # print(json.dumps(all_comments_dic, indent=2))
     # Use replace instead of regex sub because of special chars (-.\) etc...
-    for key in all_comments:
-        print(f'{all_comments[key]:40}', '-->', '# CMT' + get_bin_representation(int(key)))
-        code = code.replace(
-            all_comments[key],
-            '# CMT' + get_bin_representation(int(key))
-        )
+    for key in all_comments_dic:
+        code = code.replace(key, all_comments_dic[key])
+
+    # print('\nALL COMMENTS')
+    # print('------')
+    # print(json.dumps(all_comments, indent=2))
     
     # Strings
     # -------------------
     string_list = get_all_strings(code)
     # print(string_list)
     string_dic = { text_str:tstring_to_concat(text_str) for text_str in string_list }
+    # print('\nSTRINGS')
+    # print('------')
     # print(json.dumps(string_dic, indent=2))
 
     # Use replace instead of regex sub because of special chars (-.\) etc...
@@ -190,15 +195,16 @@ if __name__ == '__main__':
     # Doc Strings
     # -------------------
     all_doc_strings = get_all_doc_strings(code)
-    all_doc_strings = {i:all_doc_strings[i] for i in range(len(all_doc_strings))}
-    # print(json.dumps(all_doc_strings, indent=2))
+    # all_doc_strings = { i:all_doc_strings[i] for i in range(len(all_doc_strings)) }
+    all_doc_strings_dic = { all_doc_strings[i]:f'DOCS{get_bin_representation(i)}' for i in range(len(all_doc_strings))}
+
+    print('\nALL DOC STRINGS:')
+    print('------')
+    print(json.dumps(all_doc_strings_dic, indent=2))
 
     for key in all_doc_strings:
-        code = re.sub(
-            all_doc_strings[key], 
-            'DOCS' + get_bin_representation(int(key)),
-            code
-        )
+        code = re.sub( key, all_doc_strings_dic[key], code)
+    # print(json.dumps(all_doc_strings, indent=2))
 
     # Other names
     # -------------------
@@ -231,3 +237,36 @@ if __name__ == '__main__':
         )
     write_code_to_file(code)
 
+    print('\nALL NAMES')
+    print('------')
+    print(json.dumps(dic_names, indent=2))
+
+if __name__ == '__main__':
+
+
+    parser = argparse.ArgumentParser(
+        description='''Obfuscates python code.'''
+    )
+
+    parser.add_argument('name' , metavar='',  help='name: file name or expression')
+    parser.add_argument('-t', '--type'   , nargs='?', default='f', help='Type of target: f=file d=folder (all py files inside a folder) r=regex')
+    # All items passed after the -i flag are saved as an array
+    parser.add_argument('-i',  '--ignore', nargs='+', default=[''], help='Regex of files/folders to be ignored')
+
+    args = parser.parse_args()
+
+    cwd = os.getcwd()
+
+    if args.type == 'f':
+        file_name = args.name
+        obfuscate_file(file_name)
+    elif args.type == 'd':
+        print('Obfuscating python files under folder')
+        for root, dirs, files in os.walk(cwd, topdown=False):
+            print(root, files) 
+        print(args.ignore)
+    elif args.type == 'r':
+        print('Obfuscating python files matching regex pattern')
+    else:
+        print('Type not supported!')
+        
