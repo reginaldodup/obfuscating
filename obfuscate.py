@@ -36,7 +36,6 @@ def tstring_to_concat(tstring):
     concat_string = ''
     braces = False
     a = get_a_map()
-    print('------->', tstring)
     for i in range(len(tstring)):
         if tstring[i] == '{':
             braces = True
