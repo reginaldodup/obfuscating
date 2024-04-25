@@ -15,9 +15,9 @@ def get_all_comments(code):
 
 def get_all_strings(code):
     """Finds all single line strings and return it as a list"""
-    pattern = '(f?r?"[^\"\n]+")'
+    pattern = '(f?r?"[^\"\n]+")' # double quote style
     matches = re.findall(pattern, code)
-    pattern = "(f?r?'[^\'\n]+')"
+    pattern = "(f?r?'[^\'\n]+')" # single quote style
     matches+= re.findall(pattern, code)
     doc_strings = get_all_doc_strings(code)
     # Remove doc strings
@@ -75,6 +75,9 @@ def string_to_concatenated_from_array(a, s):
     return mapped_str
 
 def get_a_map(a=""):
+    # /!\ Change the name of this variable as it 
+    # does not allow users to set a variable a
+    # /!\ Do not forget to change also in the write_code_to_file /!\
     a =  "abcdefghijklmnopqrstuvwxyz"
     a += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     a += "1234567890"
@@ -148,45 +151,82 @@ def get_bin_representation(number):
     num = num[::-1]
     return num
 
-def write_code_to_file(code, filepath):
+def write_code_to_file(code, file_name):
     """Writes obfuscated code to file"""
-    with open('code.obs.py', 'w') as f:
+    file_dir = os.path.dirname(file_name)
+    target_dir = os.path.join('obs', file_dir)
+    if not os.path.exists(target_dir):
+        print(f'Creating {target_dir}...') 
+        os.makedirs(target_dir)
+    # To be replaced in main by a tree structure file writing
+    with open(os.path.join('obs', file_name), 'w') as f:
         f.write('a = "abcdefghijklmnopqrstuvwxyz"\n')
         f.write('a+= "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n')
         f.write('a+= "1234567890"\n')
         f.write('a+= "\\\""\n')
         f.write("a+= '\\\''\n")
-        f.write('a+= r"[({<>})]-=*\\|!@#$%^&/?+.,_ "\n')
+        f.write('a+= r"[({<>})]-=*\\|!@#$%^&/?+.,_: "\n')
         f.write(code)
         
-def obfuscate_files(file_list):
+def obfuscate(file_list, replacement_dic):
+    """Obfuscate a list of file basd on a replacement dictionary"""
+    for file_name in file_list:
+        with open(file_name, 'r') as f:
+            code = f.read()
+        
+        # Use replace instead of regex sub because of special chars (-.\) etc...
+        for key in replacement_dic['comments']:
+            code = code.replace(key, replacement_dic['comments'][key])
+
+        # Use replace instead of regex sub because of special chars (-.\) etc...
+        for key in replacement_dic['strings']:
+            code = code.replace(key, replacement_dic['strings'][key])
+
+        for key in replacement_dic['doc_strings']:
+            code = re.sub( key, replacement_dic['doc_strings'][key], code)
+
+        # Replace from list
+        for key in replacement_dic['names']:
+            code = re.sub(
+                f'\\b{key}\\b',
+                f'{replacement_dic["names"][key]}',
+                code
+            )
+        write_code_to_file(code, file_name)
+        print(f'{file_name = }')
+        print(f'{os.path.dirname(file_name) = }')
+        print(f'{os.path.join("obs", file_name)}')
+        # print(code)
+    pass
+
+def get_replacement_dic(file_list):
+    """Gets all replacement and returns it as a dictionary"""
     
-    file_count = 0
+    # Initializing lists
+    all_comments = []
+    string_list = []
+    all_doc_strings = []
+    class_names = []
+    function_names = []
+    func_arg_names = [] 
+    variable_names = [] 
+    iter_var_names = [] 
+
     for file_name in file_list:
         with open(file_name, 'r') as f:
             code = f.read()
 
-        print(file_name)
+        print(f'Getting replacements for file: {file_name}')
 
-        if file_count == 0:
-            all_comments = get_all_comments(code)
-            string_list = get_all_strings(code)
-            all_doc_strings = get_all_doc_strings(code)
-            class_names = get_class_names(code)
-            function_names = get_function_names(code)
-            func_arg_names = get_func_argument_names(code)
-            variable_names = get_variable_names(code)
-            iter_var_names = get_iter_variable_names(code)
-        else:
-            all_comments += get_all_comments(code)
-            string_list += get_all_strings(code)
-            all_doc_strings += get_all_doc_strings(code)
-            class_names += get_class_names(code)
-            function_names += get_function_names(code)
-            func_arg_names += get_func_argument_names(code)
-            variable_names += get_variable_names(code)
-            iter_var_names += get_iter_variable_names(code)
-        file_count += 1 # increment file count
+        # Getting lists
+        all_comments += get_all_comments(code)
+        string_list += get_all_strings(code)
+        all_doc_strings += get_all_doc_strings(code)
+        class_names += get_class_names(code)
+        function_names += get_function_names(code)
+        func_arg_names += get_func_argument_names(code)
+        variable_names += get_variable_names(code)
+        iter_var_names += get_iter_variable_names(code)
 
     # Get unique values
     all_comments = get_unique_values(all_comments)
@@ -217,38 +257,14 @@ def obfuscate_files(file_list):
         )
     }
     
-    replacement_record = dict(
+    replacement_dic = dict(
         comments = all_comments_dic,
         strings = string_dic,
         doc_strings = all_doc_strings_dic,
         names = dic_names 
     )
-    print(json.dumps(replacement_record, indent=2))
-    
-    # Code replacement, to be implemented with tree copy
-    # for file_name in file_list:
-    #     with open(file_name, 'r') as f:
-    #         code = f.read()
-    #     
-    #     # Use replace instead of regex sub because of special chars (-.\) etc...
-    #     for key in all_comments_dic:
-    #         code = code.replace(key, all_comments_dic[key])
-
-    #     # Use replace instead of regex sub because of special chars (-.\) etc...
-    #     for key in string_dic:
-    #         code = code.replace(key, string_dic[key])
-
-    #     for key in all_doc_strings:
-    #         code = re.sub( key, all_doc_strings_dic[key], code)
-
-    #     # Replace from list
-    #     for key in dic_names:
-    #         code = re.sub(
-    #             f'\\b{key}\\b',
-    #             f'{dic_names[key]}',
-    #             code
-    #         )
-    #     write_code_to_file(code, filepath)
+    # print(json.dumps(replacement_dic, indent=2))
+    return replacement_dic
 
 
 if __name__ == '__main__':
@@ -258,6 +274,9 @@ if __name__ == '__main__':
         description='''Obfuscates python code.'''
     )
 
+    # /!\ modify name to receive one or more files [list]
+    # in case we want to obfuscate only some files in a folder
+    # /!\ Replace all this by -f, -d, -r options instead
     parser.add_argument('name', metavar='',  help='name: file name or expression')
     parser.add_argument(
         '-t', 
@@ -274,33 +293,39 @@ if __name__ == '__main__':
         default=['.git', '.pytest_cache',  '__pycache__'], 
         help='Regex of files/folders to be ignored'
     )
+    # Add verbose option for print statements
 
     args = parser.parse_args()
 
     cwd = os.getcwd()
 
     if args.type == 'f':
-        file_name = args.name
-        obfuscate_files(file_name)
+        # obfuscate_files(args.name)
+        file_list = [args.name]
     elif args.type == 'd':
-        print(f'Obfuscating python files under folder: {cwd}')
+        print(f'Obfuscating python files under folder: {args.name}\n-----')
         file_list = []
-        for root, dirs, files in os.walk(cwd, topdown=False):
+        # for root, dirs, files in os.walk(cwd, topdown=False):
+        for root, dirs, files in os.walk(args.name, topdown=False):
             ignore_root = False
             for item in args.ignore:
                 if item in root:
                     ignore_root = True
                     break
             if not ignore_root:
-                print(f'\nROOT: {root}\n-----') 
+                # print(f'\nROOT: {root}\n-----') 
                 for file in files:
                     if '.py' == file[-3::]:
                         file_list.append(os.path.join(root, file))
-        # for file in file_list:
-        #     print(file)
-        obfuscate_files(file_list)
     elif args.type == 'r':
+        # To be implemented
+        # should create a file_list as all the others
         print('Obfuscating python files matching regex pattern')
     else:
         print('Type not supported!')
        
+    print(file_list)
+    replacement_dic = get_replacement_dic(file_list)
+    obfuscate(file_list, replacement_dic)
+
+    
