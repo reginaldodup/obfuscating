@@ -11,13 +11,18 @@ class TestObfuscate(unittest.TestCase):
         result = string_to_concatenated_from_array(
                     get_a_map(), code
                 )
-        self.assertEqual(result, 'a[63]+a[0]+a[1]+a[2]+a[63]')
+        self.assertEqual(result, 'lll[5]+lll[63]+lll[0]+lll[1]+lll[2]+lll[63]')
 
         code = "'a{b}c'"
         result = string_to_concatenated_from_array(
                     get_a_map(), code
                 )
-        self.assertEqual(result, 'a[63]+a[0]+a[1]+a[2]+a[63]')
+        self.assertEqual(result, 'lll[63]+lll[0]+lll[66]+lll[1]+lll[69]+lll[2]+lll[63]')
+
+    def test_tstring_to_concat(self):
+        code = "f'a{b}c'"
+        result = tstring_to_concat(code)
+        self.assertEqual(result, "lll[0]+f'{b}'+lll[2]")
         
     def test_get_iter_variable_names(self):
         """Testing iteration variables matching"""
