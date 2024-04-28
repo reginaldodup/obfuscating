@@ -115,7 +115,8 @@ def get_func_argument_names(code):
         matche = re.sub(r'\:[^,]*', '', matche) # Deal with annotations
         matche = re.split(r',', matche)
         for m in matche:
-            match_list.append(m)
+            if m not in ['__main__', 'int', 'float', 'list', 'string']:
+                match_list.append(m)
     # get only unique values
     match_list = get_unique_values(match_list)
     return match_list
@@ -126,7 +127,11 @@ def get_variable_names(code):
     matches = re.findall(pattern, code)
     # Remove dunder methods from list
     matches = [item for item in matches if '__' not in item]
-    return matches
+    match_list = []
+    for m in matches:
+        if m not in ['__main__', 'int', 'float', 'list', 'string']:
+            match_list.append(m)
+    return match_list
 
 def get_iter_variable_names(code):
     """Finds all iterables variables and return it as a list"""
@@ -159,6 +164,7 @@ def write_code_to_file(code, file_name):
         print(f'Creating {target_dir}...') 
         os.makedirs(target_dir)
     # To be replaced in main by a tree structure file writing
+    print(f'Writing {os.path.join("obs", file_name)}')
     with open(os.path.join('obs', file_name), 'w') as f:
         f.write('a = "abcdefghijklmnopqrstuvwxyz"\n')
         f.write('a+= "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n')
@@ -193,9 +199,9 @@ def obfuscate(file_list, replacement_dic):
                 code
             )
         write_code_to_file(code, file_name)
-        print(f'{file_name = }')
-        print(f'{os.path.dirname(file_name) = }')
-        print(f'{os.path.join("obs", file_name)}')
+        # print(f'{file_name = }')
+        # print(f'{os.path.dirname(file_name) = }')
+        # print(f'{os.path.join("obs", file_name)}')
         # print(code)
     pass
 
@@ -324,7 +330,7 @@ if __name__ == '__main__':
     else:
         print('Type not supported!')
        
-    print(file_list)
+    # print(file_list)
     replacement_dic = get_replacement_dic(file_list)
     obfuscate(file_list, replacement_dic)
 
