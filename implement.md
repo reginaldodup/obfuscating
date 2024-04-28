@@ -11,8 +11,12 @@
 [ ] Transform code to class and add the list items to a class attibute.
 [x] Loop through all files in a folder / subfolder when creating the obfuscate list
 [ ] Create a function that takes the json file and reverts the obfuscation
-[ ] Change the name of 'a' map written in the top of the files, as it becomes a bug
+[x] Change the name of 'a' map to 'lll' written in the top of the files, as it becomes a bug
     if a user uses 'a' for a varible, function etc name.
+[ ] Add ignore options to code
+    - Ignore (function names, class names etc)
+    - Ignore a list of specific names
+    - Ignore names from file (optional, later)
 
 ## Bugs
 

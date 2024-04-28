@@ -51,9 +51,9 @@ def tstring_to_concat(tstring):
                 concat_string += tstring[i]
             else:
                 if i==0:
-                    concat_string += f'a[{a[tstring[i]]}]'
+                    concat_string += f'lll[{a[tstring[i]]}]'
                 else:
-                    concat_string += f'+a[{a[tstring[i]]}]'
+                    concat_string += f'+lll[{a[tstring[i]]}]'
     return concat_string
 
 def get_all_doc_strings(code):
@@ -69,9 +69,9 @@ def string_to_concatenated_from_array(a, s):
     mapped_str = ""
     for i in range(len(s)):
         if mapped_str == "":
-            mapped_str  = f'a[{a[s[i]]}]'
+            mapped_str  = f'lll[{a[s[i]]}]'
         else:
-            mapped_str += f'+a[{a[s[i]]}]'
+            mapped_str += f'+lll[{a[s[i]]}]'
     return mapped_str
 
 def get_a_map(a=""):
@@ -166,12 +166,12 @@ def write_code_to_file(code, file_name):
     # To be replaced in main by a tree structure file writing
     print(f'Writing {os.path.join("obs", file_name)}')
     with open(os.path.join('obs', file_name), 'w') as f:
-        f.write('a = "abcdefghijklmnopqrstuvwxyz"\n')
-        f.write('a+= "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n')
-        f.write('a+= "1234567890"\n')
-        f.write('a+= "\\\""\n')
-        f.write("a+= '\\\''\n")
-        f.write('a+= r"[({<>})]-=*\\|!@#$%^&/?+.,_: "\n')
+        f.write('lll = "abcdefghijklmnopqrstuvwxyz"\n')
+        f.write('lll+= "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\n')
+        f.write('lll+= "1234567890"\n')
+        f.write('lll+= "\\\""\n')
+        f.write("lll+= '\\\''\n")
+        f.write('lll+= r"[({<>})]-=*\\|!@#$%^&/?+.,_: "\n')
         f.write(code)
         
 def obfuscate(file_list, replacement_dic):
