@@ -203,7 +203,8 @@ def obfuscate(file_list, replacement_dic):
         # print(f'{os.path.dirname(file_name) = }')
         # print(f'{os.path.join("obs", file_name)}')
         # print(code)
-    pass
+    with open(os.path.join('obs', 'obs.json'), 'w') as f:
+        json.dump(replacement_dic, f)
 
 def get_replacement_dic(file_list):
     """Gets all replacement and returns it as a dictionary"""
